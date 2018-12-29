@@ -13,9 +13,11 @@ import pandas as pd
 import os
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split
-#from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import AdaBoostClassifier
+from sklearn.tree import DecisionTreeClassifier
+#from sklearn.ensemble import AdaBoostClassifier
 from sklearn.metrics import f1_score,accuracy_score
+
+from sklearnInspired import MyAdaBoost
 
 from nltk.corpus import stopwords
 
@@ -95,13 +97,20 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30, train_
 
 ##############################################################################
 #train classifier
-clf = AdaBoostClassifier(n_estimators=100)
-#clf = DecisionTreeClassifier(max_depth = 1)
+#clf = AdaBoostClassifier(n_estimators=100)
+
+clf = DecisionTreeClassifier(max_depth = 1)
 clf.fit(X_train,y_train)
 ##############################################################################
 
+my_clf = MyAdaBoost()
+my_clf.my_fit(X_train, y_train)
+
+
+##############################################################################
+
 #make prediction
-y_pred = clf.predict(X_test)
+y_pred = my_clf.predict(X_test)
 #prediction f1_score
 f1_score(y_test, y_pred)
 #prediciton accuracy score

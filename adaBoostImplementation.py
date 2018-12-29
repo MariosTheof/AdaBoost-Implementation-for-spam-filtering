@@ -12,83 +12,70 @@ Created on Thu Dec 27 23:12:33 2018
 
 import numpy as np
 
-###############################################################################
-class my_AdaBoost:
-    def __init__(self, X, y, number_of_classifiers = 10, n_samples = 1024):
-        self.X = X
-        self.y = y
+def get_error_rate(pred, Y):
+    return sum(pred != Y) / float(len(Y))
 
-        self.number_of_classifiers = number_of_classifiers
-        self.n_samples = n_samples
-        #self.N = self.y.shape[0]
-        #self.weights = [1 / self.N for _ in range(self.N)]
-        self.count = 0
+def generic_clf(Y_train, X_train, Y_test, X_test, clf):
+    clf.fit(X_train,Y_train)
+    pred_train = clf.predict(X_train)
+    pred_test = clf.predict(X_test)
+    return get_error_rate(pred_train, Y_train), \
+           get_error_rate(pred_test, Y_test)
+           
+           
+           
+           
+           
+           
 
-    def train_iteration(self):
-        classifier_number = len(self.number_of_classifiers)
-
-        best_precision = None
-        best_error = None
-        best_index = None
-        for i in range(0,classifier_number):
-            #get precision & assign it to 'best_precision' if it's better
-            precision, error = self._evaluate_classifier(self.classifiers[j])
-            if best_precision < precision:
-                best_precision = precision
-                best_error = error
-                best_index
-
-        #inversion
-        if 0.5 < best_error: # this means that the best classifier is weak ( <0.5 means weak !)
-            invert = -1
-            best_error = 1 - best_error
-        else:
-            invert = 1
-
-        # new classifier copy of the best classifer
-        classifier = copy.copy(self.classifiers[best_index])
-        alpha = 0.5 * invert * np.log((1 - best_error) / best_error)
-
-        #Σ(a(t)*h(t)x)
-        self.alphas.append(alpha)
-        self.selected_classifiers.append(classifier)
-
-        #get errors
-        errors = (classifier.classify_data(self.data) != self.actual)
-
-        # Δεν το πολυκαταλαβα αυτό
-        if 0 > invert:
-            errors = ~errors
-
-        #ε = Σ (w(i) * error(i) )
-        epsilon = np.sum(self.weights * errors)
-        num_actual_0 = np.sum(self.actual[errors] == -1)
-        num_actual_1 = np.sum(self.actual[errors] == 1)
-
-        #W(t+1) = (W(t)/z) e^(-ah(t)y)
-        self.weights[mistakes] *= 0.5 / sum_of_weights
-        self.weights[~mistakes] *= 0.5 / (1 - sum_of_weights)
-
-        '''
-        #agreements = [-1 if e else 1 for e in errors]
-
+def adaboost_est(y_train, X_train, y_test, X_test, M, clf):
+    n_train, n_test = X_train.shape[0], X_test.shape[0] #instead of len()
+    # Initialize weights
+    weights = np.ones(n_train) / n_train
+    pred_train, pred_test = [np.zeros(n_train), np.zeros(n_test)]
+    
+        for i in range(M):
+        clf.fit(X_train, y_train)
+        pred_train_i = clf.predict(X_train)
+        pred_test_i = clf.predict(X_test)
+        #
+        errors = [int(x) for x in (pred_train_i != y_train)]
+        #
+        agreement = [x if x == 1 else -1 for x in errors]
+        #
+        epsilon = np.dot(weights,errors) / sum(weights) # έχω και άλλη για το 'ε'
         #a =1/2ln((1-ε)/ε) # ε= e του τ
-        alpha = 0.5 * np.log((1 - epsilon)/ epsilon)
-
-        #Σ(a(t)*h(t)x)
-        self.alphas.append(alpha)
-        self.selected_classifiers.append(classifier)
-
-        #ε = Σ (w(i) * error(i) )
-        epsilon = sum(self.weights * errors)
-        num_actual_0 = np.sum(self.actual[errors] == -1)
-        num_actual_1 = np.sum(self.actual[errors] == 1)
-
-        #z = 2sqrt(ε(1- ε))
-        z = 2 * np.sqrt(epsilon * ( 1 - epsilon))
-        #W(t+1) = (W(t)/z) e^(-ah(t)y)
-        self.weights = np.array([(weight / z )* np.exp(-1 * alpha * agreement)
-                for weight, agreement in zip(self.weights, agreements)])
-        '''
-
+        alpha = 0.5 * np.log((1 - epsilon)/ epsilon) 
+        #new weights        
+        weights = np.multiply(weights, np.exp([float(x) * alpha for x in agreement]))
+        # Add to prediction
+        pred_train = [sum(x) for x in zip(pred_train, 
+                                          [x * alpha for x in pred_train_i])]
+        pred_test = [sum(x) for x in zip(pred_test, 
+                                         [x * alpha for x in pred_test_i])]
         
+    pred_train, pred_test = np.sign(pred_train), np.sign(pred_test)
+     
+    # Return error rate in train and test set
+    return get_error_rate(pred_train, y_train), \
+           get_error_rate(pred_test, y_test)
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           
+           

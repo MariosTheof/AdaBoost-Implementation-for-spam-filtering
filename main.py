@@ -98,15 +98,17 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30, train_
 ##############################################################################
 #train classifier
 #clf = AdaBoostClassifier(n_estimators=100)
-
+'''
 clf = DecisionTreeClassifier(max_depth = 1)
 clf.fit(X_train,y_train)
+clf.score(X_train,y_train)
+'''
 ##############################################################################
 
 my_clf = MyAdaBoost()
 my_clf.my_fit(X_train, y_train)
 
-
+my_clf.score(X_train, y_train)
 ##############################################################################
 
 #make prediction
